@@ -8,6 +8,7 @@ import io.kamax.matrix.client.regular.SyncOptions;
 import io.kamax.matrix.event._MatrixEvent;
 import io.kamax.matrix.hs._MatrixRoom;
 import io.kamax.matrix.json.event.MatrixJsonRoomMessageEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.Collection;
@@ -28,10 +29,14 @@ public class BridgeService extends Thread implements Endpoint {
 
     private void sendAllPlayers() {
         StringBuilder players = new StringBuilder();
-        Iterator<? extends Player> iterator = this.getAllOnlinePlayers().iterator();
-        while (iterator.hasNext()) {
-            players.append(iterator.toString()).append("\n");
+        Collection<? extends Player> online = this.getAllOnlinePlayers();
+
+	players.append("Online:\n\n");
+
+        for (Player p : online) {
+            players.append(" - ").append(p.toString()).append("\n");
         }
+
         this.receiver.send("", players.toString());
     }
 
@@ -113,6 +118,6 @@ public class BridgeService extends Thread implements Endpoint {
 
     @Override
     public Collection<? extends Player> getAllOnlinePlayers() {
-        return null;
+      return Bukkit.getOnlinePlayers();
     }
 }
