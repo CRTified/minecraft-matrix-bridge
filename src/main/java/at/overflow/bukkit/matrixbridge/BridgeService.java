@@ -10,13 +10,14 @@ import io.kamax.matrix.hs._MatrixRoom;
 import io.kamax.matrix.json.event.MatrixJsonRoomMessageEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
 import java.util.Iterator;
 
 public class BridgeService extends Thread implements Endpoint {
     Endpoint receiver;
-
+    JavaPlugin plugin;
     _MatrixClient client;
 
     private BridgePropertyReader properties;
@@ -50,9 +51,10 @@ public class BridgeService extends Thread implements Endpoint {
 		  fallback.toString());
     }
 
-    public BridgeService(Endpoint receiver, BridgePropertyReader properties) {
+    public BridgeService(Endpoint receiver, JavaPlugin p, BridgePropertyReader properties) {
 
         this.properties = properties;
+	this.plugin = p;
 
         this.receiver = receiver;
 
@@ -98,6 +100,23 @@ public class BridgeService extends Thread implements Endpoint {
                             if (msg.getBody() != null) {
                                 if (syncToken != null && msg.getBody().startsWith("!")) {
                                     this.parseCommand(msg.getBody());
+				} else if (syncToken != null
+					   && msg.getBody().startsWith("/")
+					   && msg.getSender().getId().equals(properties.getAdmin())) {
+				  try {
+				    Bukkit.getScheduler().runTask(this.plugin,
+								  new Runnable() {
+								    @Override
+								    public void run() {
+								      Bukkit.getServer().dispatchCommand(
+									Bukkit.getServer().getConsoleSender(),
+									msg.getBody().substring(1));
+								    }
+								  }
+				      );
+				  } catch (Exception e) {
+				    e.printStackTrace();
+				  }
                                 } else {
                                     this.receiver.send(msg.getSender().getId(), msg.getBody());
                                 }
