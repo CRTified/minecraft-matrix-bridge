@@ -107,7 +107,7 @@ public class BridgeService extends Thread implements Endpoint {
 								    @Override
 								    public void run() {
 								      Bukkit.getServer().dispatchCommand(
-									Bukkit.getServer().getConsoleSender(),
+									new MatrixCommandSender(room, msg.getId(), Bukkit.getServer()),
 									msg.getBody().substring(1));
 								    }
 								  }
